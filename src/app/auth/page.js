@@ -19,6 +19,13 @@ export default function Auth() {
     else alert('Logged in successfully');
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+    if (error) console.log('Error signing in with Google:', error.message);
+  };
+
   return (
     <div>
       <input
@@ -35,6 +42,7 @@ export default function Auth() {
       />
       <button onClick={signUp}>Sign Up</button>
       <button onClick={signIn}>Sign In</button>
+      <button onClick={signInWithGoogle}>Sign In with Google</button>
     </div>
   );
 }
