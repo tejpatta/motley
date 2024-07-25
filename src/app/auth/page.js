@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
   const signUp = async () => {
     const { error } = await supabase.auth.signUp({ email, password });
@@ -14,16 +16,24 @@ export default function Auth() {
   };
 
   const signIn = async () => {
-    const { error } = await supabase.auth.signIn({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) alert(error.message);
-    else alert('Logged in successfully');
+    else {
+      alert('Logged in successfully');
+      router.push('/dashboard');
+    }
   };
 
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
     });
-    if (error) console.log('Error signing in with Google:', error.message);
+    if (error) {
+      console.log('Error signing in with Google:', error.message);
+      alert('Error signing in with Google');
+    }
+    // Note: Successful OAuth sign-in will redirect the user,
+    // so we don't need to handle success case here
   };
 
   return (
