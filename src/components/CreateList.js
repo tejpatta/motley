@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 
 
-export default function CreateList() {
+export default function CreateList({ onListCreated }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [privacyType, setPrivacyType] = useState('private');
@@ -17,6 +17,7 @@ export default function CreateList() {
     
     if (error) alert('Error creating list');
     else alert('List created successfully');
+    if (onListCreated) onListCreated(data[0]);
   };
 
   return (

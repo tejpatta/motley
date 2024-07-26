@@ -2,7 +2,7 @@
 
 import { supabase } from '../../lib/supabaseClient';
 
-export default function DeleteList({ listId }) {
+export default function DeleteList({ listId, onListDeleted }) {
   const deleteList = async () => {
     const { data, error } = await supabase
       .from('lists')
@@ -11,6 +11,7 @@ export default function DeleteList({ listId }) {
 
     if (error) console.error('Error deleting list:', error);
     else console.log('List deleted:', data);
+    if (onListDeleted) onListDeleted();
   };
 
   return (
