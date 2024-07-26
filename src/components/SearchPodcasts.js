@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import crypto from 'crypto';
 import PodcastPlayer from './PodcastPlayer';
 
 const MAX_FEEDS = 5;
-//const MAX_EPISODES_PER_FEED = 100;
-const EPISODES_PER_PAGE = 15;
+const MAX_EPISODES_PER_FEED = 20;
+const EPISODES_PER_PAGE = 10;
 
 export default function SearchPodcasts() {
   const [query, setQuery] = useState('');
@@ -35,10 +35,9 @@ export default function SearchPodcasts() {
       let allEpisodes = [];
       for (const feed of feeds.slice(0, MAX_FEEDS)) {
         const episodes = await fetchEpisodesByFeedId(feed.id);
-        allEpisodes = [...allEpisodes, ...episodes];
+        allEpisodes = [...allEpisodes, ...episodes.map(episode => ({...episode, feedTitle: feed.title}))];
       }
-      const filteredEpisodes = filterEpisodesByTitle(allEpisodes, query);
-      setAllResults(filteredEpisodes);
+      setAllResults(allEpisodes);
     } catch (error) {
       console.error('Error fetching episodes:', error);
       setError('Failed to fetch episodes. Please try again.');
@@ -57,7 +56,7 @@ export default function SearchPodcasts() {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search Podcast Episodes by Title"
+        placeholder="Search Podcasts"
       />
       <button onClick={searchPodcasts} disabled={isLoading}>
         {isLoading ? 'Searching...' : 'Search'}
@@ -68,13 +67,12 @@ export default function SearchPodcasts() {
       {paginatedResults.length > 0 ? (
         <>
           <ul>
-            {paginatedResults.map((result) => (
-              <li key={result.id}>
-                <h3>{result.title}</h3>
-                <p>Podcast: {result.feedTitle}</p>
-                <p>{result.description}</p>
-                {result.enclosureUrl && (
-                  <PodcastPlayer url={result.enclosureUrl} />
+            {paginatedResults.map((episode) => (
+              <li key={episode.id}>
+                <h3>{episode.title}</h3>
+                <p>Podcast: {episode.feedTitle}</p>
+                {episode.enclosureUrl && (
+                  <PodcastPlayer url={episode.enclosureUrl} />
                 )}
               </li>
             ))}
@@ -133,10 +131,4 @@ const fetchEpisodesByFeedId = async (feedId) => {
     headers: getAuthHeaders(),
   });
   return response.data.items || [];
-};
-
-const filterEpisodesByTitle = (episodes, query) => {
-  return episodes.filter(episode => 
-    episode.title.toLowerCase().includes(query.toLowerCase())
-  );
 };
