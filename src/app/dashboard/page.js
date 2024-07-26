@@ -1,6 +1,9 @@
-// pages/dashboard.js
+'use client';
+
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
+import CreateList from '../../components/CreateList';
+import DeleteList from '../../components/DeleteList';
 
 export default function Dashboard() {
   const [lists, setLists] = useState([]);
@@ -21,9 +24,13 @@ export default function Dashboard() {
   return (
     <div>
       <h1>Your Lists</h1>
+      <CreateList />
       <ul>
         {lists.map((list) => (
-          <li key={list.id}>{list.title}</li>
+          <li key={list.id}>
+            {list.title}
+            <DeleteList listId={list.id} />
+          </li>
         ))}
       </ul>
     </div>

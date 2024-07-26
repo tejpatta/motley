@@ -1,3 +1,5 @@
+'use client';
+
 import { NextUIProvider } from '@nextui-org/react'
 import { UserProvider } from '../contexts/UserContext';
 import Header from '../components/Header';
