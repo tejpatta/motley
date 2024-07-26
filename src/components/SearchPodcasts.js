@@ -45,9 +45,15 @@ export default function SearchPodcasts() {
       setIsLoading(false);
     }
   };
-
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
+  };
+
+  const handleEpisodeSelect = (episode) => {
+    setSelectedEpisode(episode);
+    if (onEpisodeSelect) {
+      onEpisodeSelect(episode);
+    }
   };
 
   return (
@@ -74,6 +80,12 @@ export default function SearchPodcasts() {
                 {episode.enclosureUrl && (
                   <PodcastPlayer url={episode.enclosureUrl} />
                 )}
+                <button 
+                  onClick={() => handleEpisodeSelect(episode)}
+                  style={{backgroundColor: selectedEpisode?.id === episode.id ? 'lightblue' : 'white'}}
+                >
+                  {selectedEpisode?.id === episode.id ? 'Selected' : 'Select Episode'}
+                </button>
               </li>
             ))}
           </ul>
@@ -96,39 +108,14 @@ export default function SearchPodcasts() {
       ) : (
         !isLoading && <p>No episodes found. Try a different search term.</p>
       )}
+      
+      {selectedEpisode && (
+        <div>
+          <h3>Selected Episode:</h3>
+          <p>{selectedEpisode.title}</p>
+          <p>Podcast: {selectedEpisode.feedTitle}</p>
+        </div>
+      )}
     </div>
   );
 }
-
-const getAuthHeaders = () => {
-  const apiKey = process.env.NEXT_PUBLIC_PODCAST_INDEX_KEY;
-  const apiSecret = process.env.NEXT_PUBLIC_PODCAST_INDEX_SECRET;
-  const apiHeaderTime = Math.floor(Date.now() / 1000);
-  
-  const hash = crypto.createHash('sha1')
-    .update(apiKey + apiSecret + apiHeaderTime)
-    .digest('hex');
-
-  return {
-    'X-Auth-Date': apiHeaderTime,
-    'X-Auth-Key': apiKey,
-    'Authorization': hash,
-    'User-Agent': 'Motley/1.0',
-  };
-};
-
-const searchFeeds = async (query) => {
-  const response = await axios.get('https://api.podcastindex.org/api/1.0/search/byterm', {
-    params: { q: query, max: MAX_FEEDS },
-    headers: getAuthHeaders(),
-  });
-  return response.data.feeds || [];
-};
-
-const fetchEpisodesByFeedId = async (feedId) => {
-  const response = await axios.get('https://api.podcastindex.org/api/1.0/episodes/byfeedid', {
-    params: { id: feedId, max: MAX_EPISODES_PER_FEED },
-    headers: getAuthHeaders(),
-  });
-  return response.data.items || [];
-};
