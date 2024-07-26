@@ -6,15 +6,15 @@ import crypto from 'crypto';
 import PodcastPlayer from './PodcastPlayer';
 
 const MAX_FEEDS = 5;
-//const MAX_EPISODES_PER_FEED = 20;
 const EPISODES_PER_PAGE = 10;
 
-export default function SearchPodcasts() {
+export default function SearchPodcasts({ onEpisodeSelect }) {
   const [query, setQuery] = useState('');
   const [allResults, setAllResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
 
   const totalPages = Math.ceil(allResults.length / EPISODES_PER_PAGE);
   const paginatedResults = allResults.slice(
@@ -45,6 +45,7 @@ export default function SearchPodcasts() {
       setIsLoading(false);
     }
   };
+
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
   };
@@ -54,6 +55,39 @@ export default function SearchPodcasts() {
     if (onEpisodeSelect) {
       onEpisodeSelect(episode);
     }
+  };
+
+  const getAuthHeaders = () => {
+    const apiKey = process.env.NEXT_PUBLIC_PODCAST_INDEX_KEY;
+    const apiSecret = process.env.NEXT_PUBLIC_PODCAST_INDEX_SECRET;
+    const apiHeaderTime = Math.floor(Date.now() / 1000);
+    
+    const hash = crypto.createHash('sha1')
+      .update(apiKey + apiSecret + apiHeaderTime)
+      .digest('hex');
+
+    return {
+      'X-Auth-Date': apiHeaderTime,
+      'X-Auth-Key': apiKey,
+      'Authorization': hash,
+      'User-Agent': 'Motley/1.0',
+    };
+  };
+
+  const searchFeeds = async (query) => {
+    const response = await axios.get('https://api.podcastindex.org/api/1.0/search/byterm', {
+      params: { q: query, max: MAX_FEEDS },
+      headers: getAuthHeaders(),
+    });
+    return response.data.feeds || [];
+  };
+
+  const fetchEpisodesByFeedId = async (feedId) => {
+    const response = await axios.get('https://api.podcastindex.org/api/1.0/episodes/byfeedid', {
+      params: { id: feedId, max: 20 },
+      headers: getAuthHeaders(),
+    });
+    return response.data.items || [];
   };
 
   return (
