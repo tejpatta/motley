@@ -8,7 +8,7 @@ export default function ListPage() {
 
   return (
     <div>
-      <h1>Manage List</h1>
+      <h1>Edit List</h1>
       <ListManager listId={id} />
     </div>
   );
