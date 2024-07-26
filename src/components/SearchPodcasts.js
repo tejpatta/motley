@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import PodcastPlayer from './PodcastPlayer';
 
 const MAX_FEEDS = 5;
-const MAX_EPISODES_PER_FEED = 20;
+//const MAX_EPISODES_PER_FEED = 20;
 const EPISODES_PER_PAGE = 10;
 
 export default function SearchPodcasts() {
