@@ -9,32 +9,10 @@ const supabase = createClient(
 export async function POST(request) {
   const { user } = await request.json();
 
-  // Generate a username from the email if not provided
-  let generatedUsername = user.user_metadata.username || user.email.split('@')[0];
-  
-  // Check username availability and modify if necessary
-  let isAvailable = false;
-  let counter = 1;
-  while (!isAvailable) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('username', generatedUsername)
-      .single();
-
-    if (!data) {
-      isAvailable = true;
-    } else {
-      generatedUsername = `${user.email.split('@')[0]}${counter}`;
-      counter++;
-    }
-  }
-
   const { data, error } = await supabase
     .from('profiles')
     .insert({ 
       id: user.id, 
-      username: generatedUsername,
       email: user.email,
       avatar_url: user.user_metadata.avatar_url
     });

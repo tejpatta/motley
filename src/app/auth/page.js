@@ -10,7 +10,31 @@ export default function Auth() {
   const [username, setUsername] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(null);
+  const [user, setUser] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        setUser(session?.user);
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session?.user?.id)
+          .single();
+        
+        if (!profile?.username) {
+          router.push('/create-username');
+        } else {
+          router.push('/dashboard');
+        }
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
 
   useEffect(() => {
     const checkAvailability = async () => {
@@ -122,6 +146,9 @@ export default function Auth() {
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
     });
     if (error) {
       console.log('Error signing in with Google:', error.message);
